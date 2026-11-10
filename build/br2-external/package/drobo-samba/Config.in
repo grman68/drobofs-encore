@@ -1,0 +1,24 @@
+config BR2_PACKAGE_DROBO_SAMBA
+	bool "drobo-samba"
+	depends on BR2_USE_MMU
+	depends on BR2_USE_WCHAR
+	depends on BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	depends on !BR2_STATIC_LIBS
+	depends on !BR2_TOOLCHAIN_USES_MUSL
+	select BR2_PACKAGE_CMOCKA
+	select BR2_PACKAGE_E2FSPROGS
+	select BR2_PACKAGE_GNUTLS
+	select BR2_PACKAGE_HOST_PYTHON3
+	select BR2_PACKAGE_HOST_PYTHON3_SSL
+	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE
+	select BR2_PACKAGE_LIBTIRPC if !BR2_TOOLCHAIN_HAS_NATIVE_RPC
+	select BR2_PACKAGE_POPT
+	select BR2_PACKAGE_ZLIB
+	help
+	  Samba 4 file server (SMB2/SMB3) built to live entirely inside
+	  the DroboApp directory and to run on the DroboFS 2.6.22 kernel.
+
+config BR2_PACKAGE_DROBO_SAMBA_PREFIX
+	string "install prefix on the device"
+	default "/mnt/DroboFS/Shares/DroboApps/encore"
+	depends on BR2_PACKAGE_DROBO_SAMBA

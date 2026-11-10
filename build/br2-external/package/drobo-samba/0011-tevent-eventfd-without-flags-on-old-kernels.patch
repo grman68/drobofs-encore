@@ -1,0 +1,22 @@
+From: Encore DroboApp build
+Subject: [PATCH] tevent: fall back to eventfd(0,0)+fcntl when eventfd flags are unsupported
+
+--- a/lib/tevent/tevent.c	2026-11-06 01:54:58.865655292 +0000
++++ b/lib/tevent/tevent.c	2026-11-06 01:54:58.872246500 +0000
+@@ -1056,6 +1056,16 @@
+ 
+ #ifdef HAVE_EVENTFD
+ 	ret = eventfd(0, EFD_NONBLOCK);
++	if (ret == -1 && errno == EINVAL) {
++		/*
++		 * Linux < 2.6.27 has no eventfd2, so eventfd() takes no
++		 * flags (uClibc returns EINVAL). Set O_NONBLOCK by hand.
++		 */
++		ret = eventfd(0, 0);
++		if (ret != -1) {
++			ev_set_blocking(ret, false);
++		}
++	}
+ 	if (ret == -1) {
+ 		return errno;
+ 	}

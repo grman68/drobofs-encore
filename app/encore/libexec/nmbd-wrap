@@ -1,0 +1,9 @@
+#!/bin/sh
+# Bind-mounted over /sbin/nmbd while Encore is active (NetBIOS name service).
+. /mnt/DroboFS/Shares/DroboApps/encore/libexec/common.sh
+load_settings
+[ "$SMB_NETBIOS" = "1" ] || exit 0
+[ -f "$GEN_SMB_CONF" ] || "$APP/bin/lua" "$APP/share/encore/smbconf.lua" >> "$LOG" 2>&1
+# Samba 4 writes nmbd.pid; nasd checks the Samba 3 name nmbd-smb.conf.pid.
+ln -sf nmbd.pid "$SAMBA_SEC/nmbd-smb.conf.pid"
+exec "$APP/sbin/nmbd" -D -s "$GEN_SMB_CONF"

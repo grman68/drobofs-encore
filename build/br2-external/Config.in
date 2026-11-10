@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_DROBOFS_PATH/package/drobo-samba/Config.in"

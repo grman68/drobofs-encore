@@ -1,0 +1,45 @@
+# Generated from etc/lighttpd.conf.in by service.sh
+server.modules = ( "mod_access", "mod_rewrite", "mod_setenv", "mod_openssl", "mod_cgi", "mod_deflate" )
+server.document-root = "@APP@/www"
+server.port          = @PORT@
+server.pid-file      = "@APP@/var/run/lighttpd.pid"
+server.errorlog      = "@APP@/var/log/lighttpd.log"
+server.upload-dirs   = ( "@APP@/var/tmp" )
+server.event-handler = "poll"
+server.max-connections = 64
+server.tag           = "encore"
+index-file.names     = ( "index.html" )
+
+ssl.engine  = "enable"
+ssl.pemfile = "@APP@/var/ssl/server.pem"
+ssl.openssl.ssl-conf-cmd = ("MinProtocol" => "TLSv1.2")
+
+url.rewrite-once = ( "^/api/([^?]*)(\?.*)?$" => "/cgi/api.lua/$1$2" )
+cgi.assign = ( ".lua" => "@APP@/bin/lua" )
+$HTTP["url"] =~ "^/cgi/" { cgi.execute-x-only = "disable" }
+# Revalidate the UI's static files so updates show up without a hard reload.
+$HTTP["url"] !~ "^/(api|cgi)/" { setenv.add-response-header += ( "Cache-Control" => "no-cache" ) }
+
+setenv.add-environment = (
+  "ENCORE_APP" => "@APP@",
+  "LUA_PATH"   => "@APP@/share/encore/?.lua;@APP@/share/lua/5.4/?.lua;@APP@/share/lua/5.4/?/init.lua",
+  "LUA_CPATH"  => "@APP@/lib/lua/5.4/?.so",
+  "PATH"       => "@APP@/bin:@APP@/sbin:/bin:/sbin:/usr/bin:/usr/sbin",
+  "OPENSSL_CONF" => "@APP@/etc/openssl.cnf",
+  "TZ"         => "@TZ@"
+)
+setenv.add-response-header = (
+  "X-Content-Type-Options" => "nosniff",
+  "X-Frame-Options" => "DENY",
+  "Referrer-Policy" => "same-origin",
+  "Content-Security-Policy" => "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'"
+)
+
+deflate.mimetypes = ( "text/html", "text/css", "text/javascript", "application/javascript", "application/json", "image/svg+xml" )
+deflate.cache-dir = "@APP@/var/tmp"
+
+mimetype.assign = (
+  ".html" => "text/html; charset=utf-8", ".css" => "text/css", ".js" => "text/javascript",
+  ".json" => "application/json", ".svg" => "image/svg+xml", ".png" => "image/png",
+  ".ico" => "image/x-icon", ".woff2" => "font/woff2"
+)

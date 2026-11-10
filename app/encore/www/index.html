@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encore NAS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <form class="login-card" id="login-form" autocomplete="on">
+    <div class="login-brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="8" width="36" height="32" rx="6" fill="currentColor" opacity=".18"/><rect x="12" y="14" width="24" height="5" rx="2.5" fill="currentColor"/><rect x="12" y="22" width="24" height="5" rx="2.5" fill="currentColor"/><rect x="12" y="30" width="24" height="5" rx="2.5" fill="currentColor"/><circle cx="32" cy="16.5" r="1.4" fill="#fff"/><circle cx="32" cy="24.5" r="1.4" fill="#fff"/><circle cx="32" cy="32.5" r="1.4" fill="#fff"/></svg>
+      <div>
+        <h1 id="login-host">Encore NAS</h1>
+        <p>Sign in to manage this Drobo FS</p>
+      </div>
+    </div>
+    <label>User name<input name="user" id="login-user" autocomplete="username" required></label>
+    <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="login-error" id="login-error" role="alert"></p>
+    <button type="submit" class="btn primary wide" id="login-btn">Sign in</button>
+    <p class="login-hint">Use <b>root</b> or a Drobo Dashboard user listed under Admin users.</p>
+  </form>
+</div>
+
+<div id="desktop" class="desktop" hidden>
+  <header class="taskbar">
+    <button class="tb-btn launcher-btn" id="launcher-btn" title="Main menu" aria-label="Main menu">
+      <svg viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></g></svg>
+    </button>
+    <nav class="tb-windows" id="tb-windows" aria-label="Open windows"></nav>
+    <div class="tb-right">
+      <span class="tb-status" id="tb-status" title="Connection to the Drobo"></span>
+      <span class="tb-clock" id="tb-clock"></span>
+      <div class="tb-user">
+        <button class="tb-btn" id="user-btn" aria-haspopup="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" fill="currentColor"/></svg><span id="user-name"></span></button>
+        <div class="menu" id="user-menu" hidden>
+          <button id="signout-btn">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <div class="icons" id="desktop-icons"></div>
+    <aside class="widgets" id="widgets" aria-label="Widgets"></aside>
+  </main>
+
+  <div class="launcher" id="launcher" hidden>
+    <div class="launcher-panel">
+      <input class="launcher-search" id="launcher-search" placeholder="Search apps" aria-label="Search apps">
+      <div class="launcher-grid" id="launcher-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# The DroboFS rootfs has glibc's /etc/ld.so.cache; never consult it.
+# LDSO_CACHE_SUPPORT is not set
+# Find libraries next to our private ld-uClibc.so in the DroboApp lib dir.
+LDSO_SEARCH_INTERP_PATH=y
+LDSO_RUNPATH=y

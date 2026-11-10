@@ -1,0 +1,23 @@
+From: Encore DroboApp build
+Subject: [PATCH] adjtimex: use the adjtimex syscall when clock_adjtime is missing
+
+--- a/libc/sysdeps/linux/common/adjtimex.c	2026-03-01 05:49:30.000000000 +0000
++++ b/libc/sysdeps/linux/common/adjtimex.c	2026-11-06 01:34:12.466121840 +0000
+@@ -8,11 +8,17 @@
+ 
+ #include <sys/timex.h>
+ #include <time.h>
++#include <sys/syscall.h>
+ 
++#if defined(__NR_clock_adjtime) || defined(__NR_clock_adjtime64)
+ int adjtimex(struct timex *buf)
+ {
+     return clock_adjtime(CLOCK_REALTIME, buf);
+ }
++#else
++/* Linux < 2.6.39 (e.g. the DroboFS 2.6.22 kernel) has no clock_adjtime. */
++_syscall1(int, adjtimex, struct timex *, buf)
++#endif
+ 
+ libc_hidden_def(adjtimex)
+ weak_alias(adjtimex,__adjtimex)

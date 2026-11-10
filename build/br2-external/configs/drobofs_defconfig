@@ -1,0 +1,52 @@
+# DroboFS: Marvell MV78200 (Feroceon, ARMv5TE), soft-float EABI, Linux 2.6.22.18
+BR2_arm=y
+BR2_arm926t=y
+BR2_ARM_EABI=y
+BR2_ARM_SOFT_FLOAT=y
+BR2_OPTIMIZE_2=y
+
+# Toolchain: uClibc-ng built against the device's real 2.6.22 kernel headers, so
+# syscalls the old kernel lacks (pipe2, accept4, preadv, ...) are never compiled in.
+BR2_TOOLCHAIN_BUILDROOT=y
+BR2_TOOLCHAIN_BUILDROOT_UCLIBC=y
+BR2_KERNEL_HEADERS_CUSTOM_TARBALL=y
+BR2_KERNEL_HEADERS_CUSTOM_TARBALL_LOCATION="file:///work/dl/linux-2.6.22.18-drobofs.tar.gz"
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_REALLY_OLD=y
+# A 2.6.22 tree predates the LICENSES/ directory; its COPYING carries GPLv2 + the syscall note.
+BR2_PACKAGE_HOST_LINUX_HEADERS_LICENSE_FILES="COPYING"
+BR2_UCLIBC_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_DROBOFS_PATH)/board/drobofs/uclibc.fragment"
+BR2_TOOLCHAIN_BUILDROOT_WCHAR=y
+# BR2_TOOLCHAIN_BUILDROOT_LOCALE is not set
+BR2_PTHREADS_NATIVE=y
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+
+# No kernel, bootloader, init or busybox: the stock firmware provides all that.
+BR2_INIT_NONE=y
+BR2_SYSTEM_BIN_SH_NONE=y
+# BR2_PACKAGE_BUSYBOX is not set
+# BR2_TARGET_ROOTFS_TAR is not set
+BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_DROBOFS_PATH)/patches"
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_DROBOFS_PATH)/board/drobofs/post-build.sh"
+
+# File serving
+BR2_PACKAGE_DROBO_SAMBA=y
+BR2_PACKAGE_DROBO_SAMBA_PREFIX="/mnt/DroboFS/Shares/DroboApps/encore"
+
+# Web admin: lighttpd + Lua CGI
+BR2_PACKAGE_LIGHTTPD=y
+BR2_PACKAGE_LIGHTTPD_OPENSSL=y
+BR2_PACKAGE_LIGHTTPD_ZLIB=y
+BR2_PACKAGE_LIGHTTPD_PCRE=y
+BR2_PACKAGE_LUA=y
+BR2_PACKAGE_LUA_5_4=y
+BR2_PACKAGE_LUA_CJSON=y
+BR2_PACKAGE_LUAPOSIX=y
+BR2_PACKAGE_OPENSSL=y
+BR2_PACKAGE_LIBOPENSSL=y
+BR2_PACKAGE_LIBOPENSSL_BIN=y
+
+# Backup / tools
+BR2_PACKAGE_RSYNC=y
+
+# Packaging helpers
+BR2_PACKAGE_HOST_PATCHELF=y

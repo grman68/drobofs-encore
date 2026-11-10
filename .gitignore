@@ -1,0 +1,17 @@
+# Build output and caches
+/dist/
+/build/logs/
+/build/dl/
+
+# Drobo's own firmware and software: copyrighted, never committed.
+# Get firmware 1.2.7 yourself; tools/extract-firmware.sh unpacks it into tests/fw/.
+*.tdz
+*.tdf
+*.dmg
+/tests/fw/
+
+# Local tooling
+.DS_Store
+.claude/
+tmux-*.log
+__pycache__/

@@ -1,0 +1,56 @@
+From: Encore DroboApp build
+Subject: [PATCH] Support uClibc on Linux < 2.6.27 (no pipe2/epoll_create1/inotify_init1/pwritev)
+
+diff -ru a/src/fdevent_impl.c b/src/fdevent_impl.c
+--- a/src/fdevent_impl.c	2025-09-12 19:08:20.000000000 +0000
++++ b/src/fdevent_impl.c	2026-11-06 01:45:54.233415096 +0000
+@@ -2,6 +2,7 @@
+ 
+ #include "fdevent_impl.h"
+ #include "fdevent.h"
++#include <sys/syscall.h>
+ #include "buffer.h"
+ #include "log.h"
+ 
+@@ -394,7 +395,7 @@
+     ev->poll      = fdevent_linux_sysepoll_poll;
+     ev->free      = fdevent_linux_sysepoll_free;
+ 
+-  #ifdef EPOLL_CLOEXEC
++  #if defined(EPOLL_CLOEXEC) && defined(__NR_epoll_create1)
+     if (-1 == (ev->epoll_fd = epoll_create1(EPOLL_CLOEXEC))) return -1;
+   #else
+     if (-1 == (ev->epoll_fd = epoll_create(ev->maxfds))) return -1;
+diff -ru a/src/meson.build b/src/meson.build
+--- a/src/meson.build	2025-09-12 19:08:20.000000000 +0000
++++ b/src/meson.build	2026-11-06 01:45:54.233189179 +0000
+@@ -154,7 +154,8 @@
+ }
+ 
+ foreach f, h : functions
+-  conf_data.set('HAVE_@0@'.format(f.underscorify().to_upper()), compiler.has_header_symbol(h, f, args: defs))
++  # Link-test too: uClibc built for old kernels declares syscalls it does not provide.
++  conf_data.set('HAVE_@0@'.format(f.underscorify().to_upper()), compiler.has_header_symbol(h, f, args: defs) and compiler.has_function(f, args: defs, prefix: '#include <' + h + '>'))
+ endforeach
+ 
+ if not(conf_data.get('HAVE_POLL'))
+diff -ru a/src/stat_cache.c b/src/stat_cache.c
+--- a/src/stat_cache.c	2025-09-12 19:08:20.000000000 +0000
++++ b/src/stat_cache.c	2026-11-06 01:45:54.233347929 +0000
+@@ -139,6 +139,7 @@
+  && !(defined(HAVE_SYS_EVENT_H) && defined(HAVE_KQUEUE))
+ 
+ #include <sys/inotify.h>
++#include <sys/syscall.h>
+ #ifndef IN_EXCL_UNLINK /*(not defined in some very old glibc headers)*/
+ #define IN_EXCL_UNLINK 0x04000000
+ #endif
+@@ -579,7 +580,7 @@
+ 	scf->errh = errh;
+ 
+   #ifdef HAVE_SYS_INOTIFY_H
+-   #if !defined(IN_NONBLOCK) || !defined(IN_CLOEXEC)
++   #if !defined(IN_NONBLOCK) || !defined(IN_CLOEXEC) || !defined(__NR_inotify_init1)
+ 	scf->fd = inotify_init();
+ 	if (scf->fd >= 0 && 0 != fdevent_fcntl_set_nb_cloexec(scf->fd)) {
+ 		close(scf->fd);

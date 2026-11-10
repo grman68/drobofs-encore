@@ -1,0 +1,37 @@
+From: Encore DroboApp build
+Subject: [PATCH] Build without linux/openat2.h (old kernel headers)
+
+--- a/syscall.c	2026-05-20 00:01:22.000000000 +0000
++++ b/syscall.c	2026-11-06 01:47:03.428645502 +0000
+@@ -35,7 +35,13 @@
+ 
+ #ifdef __linux__
+ #include <sys/syscall.h>
++/* Old kernel headers (e.g. Linux 2.6.22 on the Drobo FS) have no openat2. */
++#if defined(__has_include)
++#if __has_include(<linux/openat2.h>) && defined(SYS_openat2)
+ #include <linux/openat2.h>
++#define RSYNC_HAVE_OPENAT2 1
++#endif
++#endif
+ #endif
+ 
+ #include "ifuncs.h"
+@@ -1691,7 +1697,7 @@
+ 	return 0;
+ }
+ 
+-#ifdef __linux__
++#ifdef RSYNC_HAVE_OPENAT2
+ static int secure_relative_open_linux(const char *basedir, const char *relpath, int flags, mode_t mode)
+ {
+ 	struct open_how how;
+@@ -1791,7 +1797,7 @@
+ 		return -1;
+ 	}
+ 
+-#ifdef __linux__
++#ifdef RSYNC_HAVE_OPENAT2
+ 	{
+ 		int fd = secure_relative_open_linux(basedir, relpath, flags, mode);
+ 		/* ENOSYS = kernel < 5.6 doesn't have the syscall even though

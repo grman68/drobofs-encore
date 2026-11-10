@@ -1,0 +1,14 @@
+From: Encore DroboApp build
+Subject: [PATCH] lib/replace: only use FICLONERANGE when the kernel headers define it
+
+--- a/lib/replace/replace.c	2026-11-06 01:51:00.989148251 +0000
++++ b/lib/replace/replace.c	2026-11-06 01:51:00.995415751 +0000
+@@ -1094,7 +1094,7 @@
+ 			 off_t dst_off,
+ 			 off_t to_copy)
+ {
+-#ifdef HAVE_LINUX_IOCTL
++#if defined(HAVE_LINUX_IOCTL) && defined(FICLONERANGE)
+ 	struct file_clone_range cr;
+ 
+ 	cr = (struct file_clone_range) {

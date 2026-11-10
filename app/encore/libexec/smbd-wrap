@@ -1,0 +1,24 @@
+#!/bin/sh
+# Bind-mounted over /sbin/smbd while Encore is active. nasd calls
+# "/sbin/smbd -s <its smb.conf>"; we regenerate our Samba 4 config from that
+# file and start Samba 4 instead. Process name stays "smbd" (killall -HUP works).
+. /mnt/DroboFS/Shares/DroboApps/encore/libexec/common.sh
+"$APP/bin/lua" "$APP/share/encore/smbconf.lua" >> "$LOG" 2>&1
+
+# RPC services (share lists, name lookups) run in samba-dcerpcd. Starting it on
+# demand is too slow on this CPU, so keep it running with just what we need.
+L=$APP/libexec/samba
+pid=$(cat "$SAMBA_SEC/samba-dcerpcd.pid" 2>/dev/null)
+if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+  "$L/samba-dcerpcd" -D -s "$GEN_SMB_CONF" \
+    "$L/rpcd_classic" "$L/rpcd_winreg" "$L/rpcd_lsad" "$L/rpcd_epmapper"
+  # Warm the workers up in the background so the first client isn't kept waiting.
+  ip=$(ifconfig 2>/dev/null | sed -n 's/.*inet addr:\([0-9.]*\).*/\1/p' | grep -v '^127\.' | head -1)
+  [ -n "$ip" ] && ( sleep 8; for i in 1 2 3; do
+      "$APP/bin/smbclient" -s "$GEN_SMB_CONF" -L "$ip" -N -m SMB3 >/dev/null 2>&1 && break; sleep 5
+    done ) < /dev/null > /dev/null 2>&1 &
+fi
+
+# Samba 4 writes smbd.pid; nasd checks the Samba 3 name smbd-smb.conf.pid.
+ln -sf smbd.pid "$SAMBA_SEC/smbd-smb.conf.pid"
+exec "$APP/sbin/smbd" -D -s "$GEN_SMB_CONF"
